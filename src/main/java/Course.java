@@ -76,6 +76,15 @@ public class Course {
     }
 
     /**
+     * Methode qui renvoie le plus tard temps (etape) de fin de la course.
+     *
+     * @return un {@link Integer} representant le plus tard temps (etape) de fin de la course.
+     */
+    public int getLatest_finish() {
+        return latest_finish;
+    }
+
+    /**
      * Methode qui renvoie le numero de la course afin de pouvoir l'identifier.
      *
      * @return un {@link Integer} permettant d'identifier la course.
@@ -92,4 +101,5 @@ public class Course {
     public int distance() {
         return Math.abs(coordinatesStart[0] - coordinatesStart[1]) + Math.abs(coordinatesEnd[0] - coordinatesEnd[1]);
     }
+
 }

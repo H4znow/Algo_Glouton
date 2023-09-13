@@ -5,10 +5,10 @@ import java.util.LinkedList;
  */
 public class Voiture {
 
-    private int[] coordinates;
+    private final int[] coordinates;
     private int nombreDeCourse;
-    private LinkedList<Integer> numeroDesCourse;
-    private int numeroVoiture;
+    private final LinkedList<Integer> numeroDesCourse;
+    private final int numeroVoiture;
 
     /**
      * Constructeur qui creer une voiture avec un numero unique (matricule).

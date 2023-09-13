@@ -1,4 +1,3 @@
-
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -9,9 +8,9 @@ import java.util.Scanner;
  */
 public class CreateData {
 
+    private final int LENGTH_ARGS = 6;
     private LinkedList<Course> courses;
     private LinkedList<Voiture> voitures;
-    private final int LENGTH_ARGS = 6;
     private int[] params;
 
     /**
