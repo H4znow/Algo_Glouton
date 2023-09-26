@@ -88,13 +88,13 @@ public class Simulation {
 
             if (etapeNecessairePourDebuterCourse == course.getEarliest_start()) {
                 courseSelectionnee = course;
-                bestEtapes = course.getEarliest_start();
+                bestEtapes = course.getEarliest_start() + course.distance();
                 // Si la distance + le temps d'attente < meilleur distance actuel, on realise cette course
                 // Note : "la distance + le temps d'attente" car si on arrive avant le debut de la course,
                 // il est malin de voir si attendre le debut de la course vaut le coup ou bien commencer
                 // une autre course.
             } else if (etapeNecessairePourDebuterCourse + course.getEarliest_start() < bestEtapes) {
-                bestEtapes = course.getEarliest_start();
+                bestEtapes = course.getEarliest_start() + course.distance();
                 courseSelectionnee = course;
             }
         }
@@ -109,8 +109,8 @@ public class Simulation {
             if (etape + distanceCourseVoiture(course, voiture) + course.distance() > course.getLatest_finish())
                 continue;
 
-            if (course.getEarliest_start() - etape < bestEtapes) {
-                bestEtapes = etape + distanceCourseVoiture(course, voiture);
+            if (etape + distanceCourseVoiture(course, voiture) + course.distance() < bestEtapes) {
+                bestEtapes = etape + distanceCourseVoiture(course, voiture) + course.distance();
                 courseSelectionnee = course;
             }
         }
