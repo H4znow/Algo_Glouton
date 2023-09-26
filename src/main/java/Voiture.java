@@ -49,9 +49,10 @@ public class Voiture {
      *
      * @param numeroCourse un {@link Integer} qui represente le numero de la course que la voiture vient de realiser.
      */
-    public void addNumeroCourse(int numeroCourse) {
-        numeroDesCourse.add(numeroCourse);
+    public void realiserCourse(Course course) {
+        numeroDesCourse.add(course.getNumeroCourse());
         nombreDeCourse++;
+        this.setCoordinates(course.getX_end(), course.getY_end());
     }
 
     public int getNombreDeCourse() {
