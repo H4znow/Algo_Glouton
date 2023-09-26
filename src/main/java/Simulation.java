@@ -11,11 +11,10 @@ public class Simulation {
     private final CreateData createData;
     private final LinkedList<Course> courses;
     private final LinkedList<Voiture> voitures;
-    private int etape;
-    private int score;
-
     // Le temps maximale + 1
     int bestEtapes;
+    private int etape;
+    private int score;
 //    private Course bestCourse;
 //    private Voiture bestVoiture;
 
@@ -29,7 +28,7 @@ public class Simulation {
         courses = createData.getCourses();
         voitures = createData.getVoitures();
         MAX_ETAPES = createData.getMaxSteps();
-        bestEtapes = MAX_ETAPES+1;
+        bestEtapes = MAX_ETAPES + 1;
         bonus = createData.getBonus();
     }
 
@@ -37,59 +36,65 @@ public class Simulation {
      * Methode qui lance la simulation en appellant la methode {@code trajets} puis affiche le resultat avec {@code afficherConsoleTrajets}.
      */
     public void lancerSimulation() {
-        System.out.println("Hello");
         while (etape < MAX_ETAPES && !courses.isEmpty()) {
-            trajets();
-            System.out.println("hhhhh");
+            if (trajets() == 0)
+                break;
         }
         afficherConsoleTrajets();
         System.out.println("Score : " + score);
         System.out.println("Etapes : " + etape);
     }
 
-    private void trajets() {
-        Course courseSelectionnee;
+    private int trajets() {
+        Course courseSelectionnee = null;
         for (Voiture voiture :
                 voitures) {
             // Changement de strategie importante.
             // Pour chaque voiture, on va realiser la course la plus proche.
 
             // BestTime reinitialise pour chaque voiture
-            bestEtapes = MAX_ETAPES+1;
+            bestEtapes = MAX_ETAPES + 1;
 
             courseSelectionnee = Course_bonus(voiture);
-            if(courseSelectionnee != null)
+            if (courseSelectionnee != null)
                 realiserTrajet(voiture, courseSelectionnee, true);
-
-            // S'il n'y a pas de course avec bonus, realiser la course la plus proche
-            else if(courseSelectionnee == null){
+                // S'il n'y a pas de course avec bonus, realiser la course la plus proche
+            else if (courseSelectionnee == null) {
                 courseSelectionnee = Course_distance(voiture);
                 // Si aucune course n'est encore realisable. Allons etudier la voiture suivante.
-                if(courseSelectionnee == null)
+                if (courseSelectionnee == null)
                     continue;
                 realiserTrajet(voiture, courseSelectionnee, false);
             }
         }
+        if (courseSelectionnee == null)
+            return 0;
+        return 1;
     }
+
     private Course Course_bonus(Voiture voiture) {
         Course courseSelectionnee = null;
+        int etapeNecessairePourDebuterCourse = 0;
         for (Course course :
                 courses) {
+            etapeNecessairePourDebuterCourse = etape + distanceCourseVoiture(course, voiture);
+
             // Si la course ne peut pas finir, on skip la course
-            if (etape + distanceCourseVoiture(course, voiture) + course.distance() > MAX_ETAPES)
+            if (etapeNecessairePourDebuterCourse + course.distance() > course.getLatest_finish())
                 continue;
             // Si on ne peut pas jouer le bonus, on skip la course
-            if (etape + distanceCourseVoiture(course, voiture) > course.getEarliest_start())
+            if (etapeNecessairePourDebuterCourse > course.getEarliest_start())
                 continue;
-            // Si la distance + le temps d'attente < meilleur distance actuel, on realise cette course
-            // Note : "la distance + le temps d'attente" car si on arrive avant le debut de la course, il est malin
-            // de voir si attendre le debut de la course vaut le coup ou bien commencer une autre course.
-            // voici la formule avant simplification (l.90) :
-            // distanceCourseVoiture(course, voiture) + course.getEarliest_start()- (etape + distanceCourseVoiture(course, voiture))
-            if(course.getEarliest_start() - etape == 0){
+
+            if (etapeNecessairePourDebuterCourse == course.getEarliest_start()) {
                 courseSelectionnee = course;
-            } else if (course.getEarliest_start() - etape < bestEtapes) {
-                bestEtapes = course.getEarliest_start() - etape;
+                bestEtapes = course.getEarliest_start();
+                // Si la distance + le temps d'attente < meilleur distance actuel, on realise cette course
+                // Note : "la distance + le temps d'attente" car si on arrive avant le debut de la course,
+                // il est malin de voir si attendre le debut de la course vaut le coup ou bien commencer
+                // une autre course.
+            } else if (etapeNecessairePourDebuterCourse + course.getEarliest_start() < bestEtapes) {
+                bestEtapes = course.getEarliest_start();
                 courseSelectionnee = course;
             }
         }
@@ -101,11 +106,11 @@ public class Simulation {
         for (Course course :
                 courses) {
             // Si la course ne peut pas finir, on skip la course
-            if (etape + distanceCourseVoiture(course, voiture) + course.distance() > MAX_ETAPES)
+            if (etape + distanceCourseVoiture(course, voiture) + course.distance() > course.getLatest_finish())
                 continue;
 
             if (course.getEarliest_start() - etape < bestEtapes) {
-                bestEtapes = course.getEarliest_start() - etape;
+                bestEtapes = etape + distanceCourseVoiture(course, voiture);
                 courseSelectionnee = course;
             }
         }
@@ -113,10 +118,12 @@ public class Simulation {
     }
 
     private void realiserTrajet(Voiture voiture, Course course, boolean bonus_bool) {
-        if (bonus_bool){
+        if (bonus_bool) {
             score += bonus;
+            etape = course.getEarliest_start() + course.distance();
+        } else {
+            etape += distanceCourseVoiture(course, voiture) + course.distance();
         }
-        etape += distanceCourseVoiture(course, voiture) + course.distance();
         score += course.distance();
         voiture.realiserCourse(course);
         courses.remove(course);

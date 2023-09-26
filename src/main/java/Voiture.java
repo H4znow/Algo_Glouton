@@ -47,7 +47,7 @@ public class Voiture {
     /**
      * Methode permettant de sauvegarder le numero d'une course dans une {@link LinkedList}
      *
-     * @param numeroCourse un {@link Integer} qui represente le numero de la course que la voiture vient de realiser.
+     * @param course un {@link Course} qui represente la course que la voiture vient de realiser.
      */
     public void realiserCourse(Course course) {
         numeroDesCourse.add(course.getNumeroCourse());
@@ -63,7 +63,7 @@ public class Voiture {
      * Methode permettant d'imprimer sur la console un recapitulatif des courses realisees par la voiture lors de la "journee".
      */
     public void recapCourses() {
-        System.out.print(nombreDeCourse);
+        System.out.print(this.getNombreDeCourse());
         afficherLesCourses();
     }
 
