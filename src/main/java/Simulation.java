@@ -6,13 +6,15 @@ import java.util.LinkedList;
  */
 public class Simulation {
 
-    private final int maxEtapes;
+    private final int MAX_ETAPES;
     private final int bonus;
     private final CreateData createData;
     private final LinkedList<Course> courses;
     private final LinkedList<Voiture> voitures;
     private int etape;
     private int score;
+    private Course bestCourse;
+    private Voiture bestVoiture;
 
     /**
      * Constructeur de la class.
@@ -23,7 +25,7 @@ public class Simulation {
         createData = new CreateData();
         courses = createData.getCourses();
         voitures = createData.getVoitures();
-        maxEtapes = createData.getMaxSteps();
+        MAX_ETAPES = createData.getMaxSteps();
         bonus = createData.getBonus();
     }
 
@@ -31,10 +33,102 @@ public class Simulation {
      * Methode qui lance la simulation en appellant la methode {@code trajet} puis affiche le resultat avec {@code afficherConsoleTrajets}.
      */
     public void lancerSimulation() {
-        trajet();
+        boolean trajet_avecBonus;
+        while (etape < MAX_ETAPES && !courses.isEmpty()) {
+            trajet_avecBonus = trajet_avecBonus();
+            if(realiserTrajet(trajet_avecBonus)==-1)
+                break;
+        }
         afficherConsoleTrajets();
         System.out.println("Score : " + score);
         System.out.println("Etapes : " + etape);
+    }
+
+    private void trajet_Distance(int bestTime) {
+        Course courseSelectionnee = null;
+        Voiture voitureSelectionnee = null;
+
+        for (Voiture voiture :
+                voitures) {
+            for (Course course :
+                    courses) {
+                // Si la course ne peut pas finir, on skip la course
+                if (etape + distanceCourseVoiture(course, voiture) + course.distance() > MAX_ETAPES)
+                    continue;
+
+                if (distanceCourseVoiture(course, voiture) <= bestTime) {
+                    bestTime = distanceCourseVoiture(course, voiture);
+                    courseSelectionnee = course;
+                    voitureSelectionnee = voiture;
+                }
+            }
+        }
+        bestCourse = courseSelectionnee;
+        bestVoiture = voitureSelectionnee;
+    }
+
+    private boolean trajet_avecBonus() {
+        // Le temps maximale + 1
+        int bestTime = MAX_ETAPES + 1;
+        Course courseSelectionnee = null;
+        Voiture voitureSelectionnee = null;
+        boolean trajet_avecBonus = false;
+
+        for (Voiture voiture :
+                voitures) {
+            for (Course course :
+                    courses) {
+                // Si la course ne peut pas finir, on skip la course
+                if (etape + distanceCourseVoiture(course, voiture) + course.distance() > MAX_ETAPES)
+                    continue;
+                // Si on ne peut pas jouer le bonus, on skip la course
+                if (etape + distanceCourseVoiture(course, voiture) > course.getEarliest_start())
+                    continue;
+                // Si la distance + le temps d'attente < meilleur distance actuel, on realise cette courte
+                // Note : "la distance + le temps d'attente" car si on arrive avant le debut de la course, il est malin
+                // de voir si attendre le debut de la course vaut le coup ou bien commencer une autre course.
+                // voici la formule avant simplification :
+                // distanceCourseVoiture(course, voiture) + course.getEarliest_start()- (etape + distanceCourseVoiture(course, voiture))
+                if(course.getEarliest_start() - etape == 0){
+                    bestCourse = course;
+                    bestVoiture = voiture;
+                    return true;
+                } else if (course.getEarliest_start() - etape < bestTime) {
+                    bestTime = course.getEarliest_start() - etape;
+                    courseSelectionnee = course;
+                    voitureSelectionnee = voiture;
+                    trajet_avecBonus = true;
+                }
+            }
+        }
+        // Aucun chemin avec Bonus
+        if (!trajet_avecBonus) {
+            trajet_Distance(bestTime);
+            bestCourse = bestCourse;
+            bestVoiture = bestVoiture;
+        } else {
+            bestCourse = courseSelectionnee;
+            bestVoiture = voitureSelectionnee;
+        }
+//        if(bestCourse!=null)
+//            System.out.printf("Course %d, Voiture %d, Etape  %d, Distance %d, Bonus %b\n",
+//                    this.bestCourse.getNumeroCourse(), this.bestVoiture.getNumeroVoiture(), etape, distanceCourseVoiture(this.bestCourse,bestVoiture)
+//                    , etape + distanceCourseVoiture(this.bestCourse, this.bestVoiture) <= this.bestCourse.getEarliest_start());
+        return trajet_avecBonus;
+    }
+
+    private int realiserTrajet(boolean trajet_avecBonus) {
+        if(bestCourse == null || bestVoiture == null)
+            return -1;
+        if (trajet_avecBonus){
+            score += bonus;
+        }
+        etape += distanceCourseVoiture(bestCourse, bestVoiture) + bestCourse.distance();
+        score += bestCourse.distance();
+        bestVoiture.setCoordinates(bestCourse.getX_end(), bestCourse.getY_end());
+        bestVoiture.addNumeroCourse(bestCourse.getNumeroCourse());
+        courses.remove(bestCourse);
+        return 0;
     }
 
     private void afficherConsoleTrajets() {
@@ -44,104 +138,7 @@ public class Simulation {
         }
     }
 
-    private void trajet() {
-        Object[] course_et_Voiture;
-        Course course;
-        Voiture voiture;
-        while (etape < maxEtapes && !courses.isEmpty()) {
-            if (avantageBonus()) {
-                course_et_Voiture = slectionnerMeilleurCourse_Bonus();
-            } else {
-                course_et_Voiture = slectionnerMeilleurCourse_Distance();
-            }
-            if (course_et_Voiture[0] == null || course_et_Voiture[1] == null)
-                return;
-            course = (Course) course_et_Voiture[0];
-            voiture = (Voiture) course_et_Voiture[1];
-            executerTrajet(course, voiture);
-        }
-    }
-
-    private void executerTrajet(Course course, Voiture voiture) {
-        courses.remove(course);
-        voiture.addNumeroCourse(course.getNumeroCourse());
-        if (etape + distanceVoitureCourse(course, voiture) == course.getEarliest_start())
-            score += bonus;
-        score += course.distance();
-        etape += distanceVoitureCourse(course, voiture) + course.distance();
-        voiture.setCoordinates(course.getX_end(), course.getY_end());
-    }
-
-    private boolean avantageBonus() {
-        return moyenneDistance() < bonus;
-    }
-
-    private int moyenneDistance() {
-        int distanceCourses = 0;
-        for (Course course :
-                courses) {
-            distanceCourses += course.distance();
-        }
-        return distanceCourses / courses.size();
-    }
-
-    private Object[] slectionnerMeilleurCourse_Bonus() {
-        Course bestCourse = null;
-        Voiture bestVoiture = null;
-
-        int best_distance = maxEtapes + 1;
-
-        for (Voiture voiture :
-                voitures) {
-            for (Course course :
-                    courses) {
-                if (distanceVoitureCourse(course, voiture) < best_distance
-                        && bonusPossible(distanceVoitureCourse(course, voiture), course)) {
-                    best_distance = distanceVoitureCourse(course, voiture);
-                    bestCourse = course;
-                    bestVoiture = voiture;
-                }
-            }
-        }
-        return new Object[]{bestCourse, bestVoiture};
-    }
-
-    private Object[] slectionnerMeilleurCourse_Distance() {
-        Course bestCourse = null;
-        Voiture bestVoiture = null;
-
-        int best_distance = maxEtapes + 1;
-
-        for (Voiture voiture :
-                voitures) {
-
-            for (Course course :
-                    courses) {
-                if (distanceVoitureCourse(course, voiture) < best_distance
-                        && coursePeutFinir(distanceVoitureCourse(course, voiture), course)) {
-                    best_distance = distanceVoitureCourse(course, voiture);
-                    bestCourse = course;
-                    bestVoiture = voiture;
-                }
-            }
-        }
-        return new Object[]{bestCourse, bestVoiture};
-    }
-
-    private boolean bonusPossible(int distanceVoitureCourse, Course course) {
-        return distanceVoitureCourse + etape + course.distance() == course.getEarliest_start() &&
-                distanceVoitureCourse + etape + course.distance() <= course.getLatest_finish();
-    }
-
-    private boolean coursePeutFinir(int distanceVoitureCourse, Course course) {
-        if (distanceVoitureCourse + etape + course.distance() > maxEtapes ||
-                distanceVoitureCourse + etape + course.distance() > course.getLatest_finish()) {
-            return false;
-        }
-        return true;
-    }
-
-    private int distanceVoitureCourse(Course course, Voiture voiture) {
+    private int distanceCourseVoiture(Course course, Voiture voiture) {
         int[] coordinatesVoiture = voiture.getCoordinates();
         return Math.abs(coordinatesVoiture[0] - course.getX_start()) + Math.abs(coordinatesVoiture[1] - course.getY_start());
     }

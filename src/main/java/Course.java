@@ -99,7 +99,7 @@ public class Course {
      * @return un {@link Integer} egale a la distance entre les coordonnees de depart et de fin de la course.
      */
     public int distance() {
-        return Math.abs(coordinatesStart[0] - coordinatesStart[1]) + Math.abs(coordinatesEnd[0] - coordinatesEnd[1]);
+        return Math.abs(coordinatesStart[0] - coordinatesEnd[0]) + Math.abs(coordinatesStart[1] - coordinatesEnd[1]);
     }
 
 }

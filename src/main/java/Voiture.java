@@ -6,9 +6,9 @@ import java.util.LinkedList;
 public class Voiture {
 
     private final int[] coordinates;
-    private int nombreDeCourse;
     private final LinkedList<Integer> numeroDesCourse;
     private final int numeroVoiture;
+    private int nombreDeCourse;
 
     /**
      * Constructeur qui creer une voiture avec un numero unique (matricule).
@@ -54,12 +54,20 @@ public class Voiture {
         nombreDeCourse++;
     }
 
+    public int getNombreDeCourse() {
+        return nombreDeCourse;
+    }
+
     /**
      * Methode permettant d'imprimer sur la console un recapitulatif des courses realisees par la voiture lors de la "journee".
      */
     public void recapCourses() {
         System.out.print(nombreDeCourse);
         afficherLesCourses();
+    }
+
+    public int getNumeroVoiture() {
+        return numeroVoiture;
     }
 
     private void afficherLesCourses() {

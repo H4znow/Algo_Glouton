@@ -35,14 +35,14 @@ public class CreateData {
 
     private void creerVoitures(int nombreDeVoiture) {
         for (int i = 0; i < nombreDeVoiture; i++) {
-            voitures.add(new Voiture(i + 1));
+            voitures.add(new Voiture(i));
         }
     }
 
     private void creerLesCourses(Scanner in) {
         int nombreDeCoursesARealiser = params[3];
         for (int i = 0; i < nombreDeCoursesARealiser; i++) {
-            creerUneCourse(in, i + 1);
+            creerUneCourse(in, i);
         }
     }
 
