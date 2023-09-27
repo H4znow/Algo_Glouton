@@ -8,6 +8,8 @@ public class Voiture {
     private final int[] coordinates;
     private final LinkedList<Integer> numeroDesCourse;
     private final int numeroVoiture;
+    private int maxEtapes;
+    private int etapes;
     private int nombreDeCourse;
 
     /**
@@ -15,12 +17,14 @@ public class Voiture {
      *
      * @param numeroVoiture un {@link Integer} permettant de differencier les differentes voitures.
      */
-    public Voiture(int numeroVoiture) {
+    public Voiture(int numeroVoiture, int maxEtapes) {
         coordinates = new int[2];
         coordinates[0] = 0;
         coordinates[1] = 0;
         nombreDeCourse = 0;
         numeroDesCourse = new LinkedList<>();
+        this.maxEtapes = maxEtapes;
+        etapes = 0;
         this.numeroVoiture = numeroVoiture;
     }
 
@@ -49,9 +53,10 @@ public class Voiture {
      *
      * @param course un {@link Course} qui represente la course que la voiture vient de realiser.
      */
-    public void realiserCourse(Course course) {
+    public void realiserCourse(Course course, int etapes) {
         numeroDesCourse.add(course.getNumeroCourse());
         nombreDeCourse++;
+        this.etapes += etapes;
         this.setCoordinates(course.getX_end(), course.getY_end());
     }
 
@@ -65,6 +70,18 @@ public class Voiture {
     public void recapCourses() {
         System.out.print(this.getNombreDeCourse());
         afficherLesCourses();
+    }
+
+    public boolean maxEtapesReached() {
+        return etapes >= maxEtapes;
+    }
+
+    public int getEtapes() {
+        return etapes;
+    }
+
+    public void addEtapes(int etapes) {
+        this.etapes += etapes;
     }
 
     public int getNumeroVoiture() {
