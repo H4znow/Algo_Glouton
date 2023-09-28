@@ -35,7 +35,7 @@ public class CreateData {
 
     private void creerVoitures(int nombreDeVoiture) {
         for (int i = 0; i < nombreDeVoiture; i++) {
-            voitures.add(new Voiture(i, params[5]));
+            voitures.add(new Voiture(params[5]));
         }
     }
 

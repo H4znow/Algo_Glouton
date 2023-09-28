@@ -12,6 +12,7 @@ public class Simulation {
     private final int maxEtapes;
     private final LinkedList<Course> courses;
     private final LinkedList<Voiture> voitures;
+    private ArrayList<Voiture> voituresServiceFinis;
     private int score;
     private boolean finSimulation;
 
@@ -21,6 +22,7 @@ public class Simulation {
      */
     public Simulation() {
         score = 0;
+        voituresServiceFinis = new ArrayList<>();
         createData = new CreateData();
         maxEtapes = createData.getMaxSteps();
         courses = createData.getCourses();
@@ -45,12 +47,11 @@ public class Simulation {
      * La strategie choisie ici est d'attribuer a toute les voitures une course avec bonus realisable.
      * Si cette course n'existe pas, alors la on va lui attribuer la course la plus proche.
      * Cela permet de disperser les voitures sur la "map" et les rapprocher de potentiel lointaine courses.
-     *
+     * <p>
      * Si toute les voitures sont hors servie ou toute les courses ont ete parcourue, la methodde signale a
      * {@code lancerSimulation} la fin de la simulation.
      */
     private void trajet() {
-        ArrayList<Voiture> voituresServiceFinis = new ArrayList<>();
         for (Voiture voiture :
                 voitures) {
             //Si la voiture n'est plus en service, on ignore la voiture
@@ -71,8 +72,9 @@ public class Simulation {
                     continue;
 
                 // Si le bonus est jouable et la course est la plus rentable, on la selectionne
-                if ((etapesNecessaireAtteindreCourse <= course.getEarliest_start()) && (course.getEarliest_start() < bestEtapes)) {
-                    bestEtapes = etapesNecessaireAtteindreCourse;
+                if ((etapesNecessaireAtteindreCourse <= course.getEarliest_start()) &&
+                        (course.getEarliest_start() + course.distance() < bestEtapes)) {
+                    bestEtapes = etapesNecessaireAtteindreCourse + course.distance();
                     bestCourse = course;
                     bonus = this.bonus;
                 }
@@ -88,8 +90,8 @@ public class Simulation {
                     if (etapesNecessaireAtteindreCourse + course.distance() > course.getLatest_finish())
                         continue;
 
-                    if (etapesNecessaireAtteindreCourse < bestEtapes) {
-                        bestEtapes = etapesNecessaireAtteindreCourse;
+                    if (etapesNecessaireAtteindreCourse + course.distance() < bestEtapes) {
+                        bestEtapes = etapesNecessaireAtteindreCourse + course.distance();
                         bestCourse = course;
                     }
                 }
@@ -100,7 +102,7 @@ public class Simulation {
             if (bestCourse == null)
                 voituresServiceFinis.add(voiture);
             else
-                realiserTrajet(voituresServiceFinis, voiture, bestCourse, bonus);
+                realiserTrajet(voiture, bestCourse, bonus);
         }
         // Si toute les voitures ne sont plus en service
         // Ou
@@ -111,13 +113,13 @@ public class Simulation {
     }
 
 
-    private void realiserTrajet(ArrayList<Voiture> voituresServicefini, Voiture voiture, Course course, int bonus) {
+    private void realiserTrajet(Voiture voiture, Course course, int bonus) {
         score += bonus;
         score += course.distance();
         voiture.realiserCourse(course, distanceCourseVoiture(course, voiture));
         courses.remove(course);
         if (voiture.maxEtapesReached())
-            voituresServicefini.add(voiture);
+            voituresServiceFinis.add(voiture);
     }
 
     private void afficherConsoleTrajets() {

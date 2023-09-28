@@ -7,7 +7,6 @@ public class Voiture {
 
     private final int[] coordinates;
     private final LinkedList<Integer> numeroDesCourse;
-    private final int numeroVoiture;
     private final int maxEtapes;
     private int etapes;
     private int nombreDeCourse;
@@ -15,10 +14,9 @@ public class Voiture {
     /**
      * Constructeur qui creer une voiture avec un numero unique (matricule).
      *
-     * @param numeroVoiture un {@link Integer} permettant de differencier les differentes voitures.
      * @param maxEtapes permet de definir le maximum d'etapes que la voitures peut parcourir.
      */
-    public Voiture(int numeroVoiture, int maxEtapes) {
+    public Voiture(int maxEtapes) {
         coordinates = new int[2];
         coordinates[0] = 0;
         coordinates[1] = 0;
@@ -26,7 +24,6 @@ public class Voiture {
         numeroDesCourse = new LinkedList<>();
         this.maxEtapes = maxEtapes;
         etapes = 0;
-        this.numeroVoiture = numeroVoiture;
     }
 
     /**
@@ -52,7 +49,7 @@ public class Voiture {
     /**
      * Methode permettant de sauvegarder le numero d'une course dans une {@link LinkedList}
      *
-     * @param course un {@link Course} qui represente la course qui sera realisee.
+     * @param course                  un {@link Course} qui represente la course qui sera realisee.
      * @param distance_voiture_course fournit la distance a parcourir par la voiture pour atteindre le point de
      *                                depart de la course.
      */
@@ -68,6 +65,7 @@ public class Voiture {
 
     /**
      * Methode fournissant le nombre de courses que la voiture a realise.
+     *
      * @return un {@link Integer} qui represente le nombre de course realisee par la voiture.
      */
     public int getNombreDeCourse() {
