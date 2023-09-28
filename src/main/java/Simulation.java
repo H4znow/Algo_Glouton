@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -6,94 +7,102 @@ import java.util.LinkedList;
  */
 public class Simulation {
 
-    private final int MAX_ETAPES;
-    private final int bonus;
     private final CreateData createData;
+    private final int bonus;
+    private final int maxEtapes;
     private final LinkedList<Course> courses;
     private final LinkedList<Voiture> voitures;
-    // Le temps maximale + 1
-    private double bestEtapes;
-    private int etape;
     private int score;
-//    private Course bestCourse;
-//    private Voiture bestVoiture;
+    private boolean finSimulation;
+
 
     /**
      * Constructeur de la class.
      */
     public Simulation() {
-        etape = 0;
         score = 0;
         createData = new CreateData();
+        maxEtapes = createData.getMaxSteps();
         courses = createData.getCourses();
         voitures = createData.getVoitures();
-        MAX_ETAPES = createData.getMaxSteps();
-        bestEtapes = Double.POSITIVE_INFINITY;
         bonus = createData.getBonus();
+        finSimulation = false;
     }
 
     /**
      * Methode qui lance la simulation en appellant la methode {@code trajets} puis affiche le resultat avec {@code afficherConsoleTrajets}.
      */
     public void lancerSimulation() {
-        while (!voitures.isEmpty() && !courses.isEmpty()) {
-            if (trajets() == 0)
-                break;
+        while (!finSimulation) {
+            trajet();
         }
         afficherConsoleTrajets();
         System.out.println("Score : " + score);
     }
 
-    private int trajets() {
-        Course courseSelectionnee = null;
+
+    private void trajet() {
+        ArrayList<Voiture> voituresServiceFinis = new ArrayList<>();
         for (Voiture voiture :
                 voitures) {
-            // Changement de strategie importante.
-            // Pour chaque voiture, on va realiser la course la plus proche.
-
-            // BestTime reinitialise pour chaque voiture
-            bestEtapes = Double.POSITIVE_INFINITY;
-
-            courseSelectionnee = choix_Course(voiture);
-            if (courseSelectionnee == null)
-                return 0;
-            realiserTrajet(voiture, courseSelectionnee);
-        }
-        return 1;
-    }
-
-    private Course choix_Course(Voiture voiture) {
-        Course courseSelectionnee = null;
-        int etapeNecessairePourDebuterCourse;
-        for (Course course :
-                courses) {
-            etapeNecessairePourDebuterCourse = voiture.getEtapes() + distanceCourseVoiture(course, voiture);
-            // Si la course ne peut pas finir, on skip la course
-            if (etapeNecessairePourDebuterCourse + course.distance() > course.getLatest_finish())
+            //Si la voiture n'est plus en service, on ignore la voiture
+            if (voituresServiceFinis.contains(voiture))
                 continue;
 
-            // Si la course ne peut pas commencer, voir si attendre vaut la paine
-            if (etapeNecessairePourDebuterCourse < course.getEarliest_start()) {
-                if (course.getEarliest_start() < bestEtapes) {
-                    bestEtapes = course.getEarliest_start() + course.distance();
-                    score += 2;
-                    voiture.addEtapes(course.getEarliest_start() - etapeNecessairePourDebuterCourse);
-                    courseSelectionnee = course;
+            Course bestCourse = null;
+            int etapesNecessaireAtteindreCourse;
+            int bestEtapes = maxEtapes + 1;
+            int bonus = 0;
+
+
+            for (Course course :
+                    courses) {
+                etapesNecessaireAtteindreCourse = voiture.getEtapes() + distanceCourseVoiture(course, voiture);
+                // Si la course ne peut pas finir, skip
+                if (etapesNecessaireAtteindreCourse + course.distance() > course.getLatest_finish())
+                    continue;
+
+                // Si le bonus est jouable et la course est la plus rentable, on la selectionne
+                if ((etapesNecessaireAtteindreCourse <= course.getEarliest_start()) && (course.getEarliest_start() < bestEtapes)) {
+                    bestEtapes = etapesNecessaireAtteindreCourse;
+                    bestCourse = course;
+                    bonus = this.bonus;
                 }
-            } else if (etapeNecessairePourDebuterCourse + course.distance() < bestEtapes) {
-                bestEtapes = etapeNecessairePourDebuterCourse + course.distance();
-                courseSelectionnee = course;
             }
+
+            // Si aucune course avec bonus n'est realisable, il faut chercher alors seulement la plus proche course
+            if (bestCourse == null) {
+
+                for (Course course :
+                        courses) {
+                    etapesNecessaireAtteindreCourse = voiture.getEtapes() + distanceCourseVoiture(course, voiture);
+                    // Si la course ne peut pas finir, skip
+                    if (etapesNecessaireAtteindreCourse + course.distance() > course.getLatest_finish())
+                        continue;
+
+                    if (etapesNecessaireAtteindreCourse < bestEtapes) {
+                        bestEtapes = etapesNecessaireAtteindreCourse;
+                        bestCourse = course;
+                    }
+                }
+            }
+
+            // Si a nouveau aucune course n'est realisable, alors la simulation termine.
+            if (bestCourse == null)
+                finSimulation = true;
+            else
+                realiserTrajet(voituresServiceFinis, voiture, bestCourse, bonus);
         }
-        return courseSelectionnee;
     }
 
-    private void realiserTrajet(Voiture voiture, Course course) {
+
+    private void realiserTrajet(ArrayList<Voiture> voituresServicefini, Voiture voiture, Course course, int bonus) {
+        score += bonus;
         score += course.distance();
-        voiture.realiserCourse(course, distanceCourseVoiture(course, voiture) + course.distance());
+        voiture.realiserCourse(course, distanceCourseVoiture(course, voiture));
         courses.remove(course);
-        if(voiture.maxEtapesReached())
-            voitures.remove(voiture);
+        if (voiture.maxEtapesReached())
+            voituresServicefini.add(voiture);
     }
 
     private void afficherConsoleTrajets() {
