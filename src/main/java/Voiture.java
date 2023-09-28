@@ -16,6 +16,7 @@ public class Voiture {
      * Constructeur qui creer une voiture avec un numero unique (matricule).
      *
      * @param numeroVoiture un {@link Integer} permettant de differencier les differentes voitures.
+     * @param maxEtapes permet de definir le maximum d'etapes que la voitures peut parcourir.
      */
     public Voiture(int numeroVoiture, int maxEtapes) {
         coordinates = new int[2];
@@ -51,7 +52,9 @@ public class Voiture {
     /**
      * Methode permettant de sauvegarder le numero d'une course dans une {@link LinkedList}
      *
-     * @param course un {@link Course} qui represente la course que la voiture vient de realiser.
+     * @param course un {@link Course} qui represente la course qui sera realisee.
+     * @param distance_voiture_course fournit la distance a parcourir par la voiture pour atteindre le point de
+     *                                depart de la course.
      */
     public void realiserCourse(Course course, int distance_voiture_course) {
         this.numeroDesCourse.add(course.getNumeroCourse());
@@ -63,6 +66,10 @@ public class Voiture {
         this.setCoordinates(course.getX_end(), course.getY_end());
     }
 
+    /**
+     * Methode fournissant le nombre de courses que la voiture a realise.
+     * @return un {@link Integer} qui represente le nombre de course realisee par la voiture.
+     */
     public int getNombreDeCourse() {
         return nombreDeCourse;
     }
@@ -75,14 +82,6 @@ public class Voiture {
         afficherLesCourses();
     }
 
-    public boolean maxEtapesReached() {
-        return etapes >= maxEtapes;
-    }
-
-    public int getEtapes() {
-        return etapes;
-    }
-
     private void afficherLesCourses() {
         for (Integer numero : numeroDesCourse
         ) {
@@ -90,4 +89,24 @@ public class Voiture {
         }
         System.out.print("\n");
     }
+
+    /**
+     * Methode qui permet de savoir si la voiture a fini son service (atteint le max d'etapes possible) ou pas.
+     *
+     * @return {@code True} si la voiture a atteint le max d'etape autorisee;sinon renvoie {@code False}
+     */
+    public boolean maxEtapesReached() {
+        return etapes >= maxEtapes;
+    }
+
+
+    /**
+     * Methode qui permet de recuperer le nombre d'etapes que la voiture a realise a tout moment de la simulation.
+     *
+     * @return le nombre d'etapes parcourues par la voiture.
+     */
+    public int getEtapes() {
+        return etapes;
+    }
+
 }

@@ -30,7 +30,7 @@ public class Simulation {
     }
 
     /**
-     * Methode qui lance la simulation en appellant la methode {@code trajets} puis affiche le resultat avec {@code afficherConsoleTrajets}.
+     * Methode qui lance la simulation en appellant la methode {@code trajet} puis affiche le resultat avec {@code afficherConsoleTrajets}.
      */
     public void lancerSimulation() {
         while (!finSimulation) {
@@ -40,7 +40,15 @@ public class Simulation {
         System.out.println("Score : " + score);
     }
 
-
+    /**
+     * Cette methode est le coeur de l'algorithme Glouton.
+     * La strategie choisie ici est d'attribuer a toute les voitures une course avec bonus realisable.
+     * Si cette course n'existe pas, alors la on va lui attribuer la course la plus proche.
+     * Cela permet de disperser les voitures sur la "map" et les rapprocher de potentiel lointaine courses.
+     *
+     * Si toute les voitures sont hors servie ou toute les courses ont ete parcourue, la methodde signale a
+     * {@code lancerSimulation} la fin de la simulation.
+     */
     private void trajet() {
         ArrayList<Voiture> voituresServiceFinis = new ArrayList<>();
         for (Voiture voiture :
@@ -87,12 +95,19 @@ public class Simulation {
                 }
             }
 
-            // Si a nouveau aucune course n'est realisable, alors la simulation termine.
+            // Si a nouveau aucune course n'est realisable, alors la voiture fini son service car elle ne peut plus rien
+            // faire.
             if (bestCourse == null)
-                finSimulation = true;
+                voituresServiceFinis.add(voiture);
             else
                 realiserTrajet(voituresServiceFinis, voiture, bestCourse, bonus);
         }
+        // Si toute les voitures ne sont plus en service
+        // Ou
+        // Il n'y a plus de course
+        // Alors la simulation est finie
+        if ((voituresServiceFinis.size() == voitures.size()) || (courses.isEmpty()))
+            finSimulation = true;
     }
 
 
